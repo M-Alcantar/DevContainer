@@ -1,13 +1,21 @@
+#include<algorithm>
 #include<iostream>
 #include<random>
 #include<thread>
 #include<vector>
 
+// SumMachine class definition
 class SumMachine {
+    int id;
     int total;
 
 public:
+    SumMachine(int id) : id(id) {
+    }
+
+    // Task for summing random numbers
     void randomSum() {
+        // Making use of <random> to seed number generation
         std::random_device rd;
         std::default_random_engine gen(rd());
         std::uniform_int_distribution<int> dist(1, 1000);
@@ -18,6 +26,9 @@ public:
         }
     }
 
+    int Id() const {
+        return id;
+    }
     int Total() const {
         return total;
     }
@@ -25,11 +36,13 @@ public:
 
 int main() {
     const int num = 10;
-    std::vector<SumMachine> sumMachines(num);
+    std::vector<SumMachine> sumMachines;
     std::vector<std::thread> threads;
-    int highestTotal = 0;
-    int highestThread = 0;
 
+    // Initializing each SumMachine and respective thread
+    for(int i=0; i < num; i++) {
+        sumMachines.emplace_back(i+1);
+    }
     for(auto &sM : sumMachines) {
         threads.emplace_back(&SumMachine::randomSum, &sM);
     }
@@ -38,16 +51,15 @@ int main() {
     }
 
     std::cout << "Thread #\tTotal" << std::endl;
-    for(int i=0; i < sumMachines.size(); i++) {
-        auto thisTotal = sumMachines[i].Total();
-        std::cout << i+1 << "\t\t" << thisTotal << std::endl;
-        if(thisTotal > highestTotal) {
-            highestTotal = thisTotal;
-            highestThread = i;
-        }
+    for(auto &sM : sumMachines) {
+        std::cout << sM.Id() << "\t\t" << sM.Total() << std::endl;
     }
 
-    std::cout << "\nThread with highest total: Thread #" << highestThread+1 << std::endl;
+    // Using std::sort with a custom function to sort SumMachines in descending order
+    std::sort(sumMachines.begin(), sumMachines.end(), [](const SumMachine& a, const SumMachine& b) {
+        return a.Total() > b.Total();
+    });
+    std::cout << "\nThread with highest total: Thread #" << sumMachines[0].Id() << std::endl;
 
     return 0;
 }
